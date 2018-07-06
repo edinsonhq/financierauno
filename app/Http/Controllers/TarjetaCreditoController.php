@@ -395,7 +395,8 @@ public function datos_fecha_actual(){
 
         $finantiendaDatos = [
             "finantiendaNombre" => $finantienda->Finantienda,
-            "finantiendaId" => $finantienda->Finantienda_key,
+            // "finantiendaId" => $finantienda->Finantienda_key,
+            "finantiendaId" => str_pad($finantienda->Finantienda_key ,3,"0",STR_PAD_LEFT),
         ];
 
         return $finantiendaDatos;
