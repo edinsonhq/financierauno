@@ -294,29 +294,37 @@ class TarjetaCreditoController extends Controller
     public function tarjetas_ingresadas($finantiendaId){
         try{
       
-           $finantiendaDatos= $this->finantiendaShow($finantiendaId);
+            $finantiendaDatos= $this->finantiendaShow($finantiendaId);
 
             // obteniendo mes actual
             $datos_fecha_actual =  $this->datos_fecha_actual();
+            $dia_actual =  $this->diaActual();
 
-            $dias = $datos_fecha_actual['nro_dias'];
-            // $mes = $datos_fecha_actual['mes'];
-            $mes = "06";
-            $anio = $datos_fecha_actual['anio'];
+
+
+            $dias = (string)$datos_fecha_actual['nro_dias'];
+            $mes = (string)$datos_fecha_actual['mes'];
+            $anio = (string)$datos_fecha_actual['anio'];
+
+
+            $fecha_actual = $dia_actual."-".$mes."-".$anio;
+
 
             // valores a enviar al procedimiento
             $valores = [$dias,$mes,$anio,$finantiendaId];
+            // dd($valores);
             // llamando al procedimiento
-            $ejecutivos_calendario = DB::select("EXEC [dbo].[sp_tarjetas_ingresadas] ?,?,?,?", $valores);
+             $ejecutivos_calendario = DB::select("EXEC [dbo].[sp_tarjetas_ingresadas] ?,?,?,?", $valores);
 
             return response()->json(['msg' => 'Consulta exitosa',
                                     'rpta' => $ejecutivos_calendario, 
                                     'mes' => $mes, 
+                                    'fechaActual' => $fecha_actual,
                                     'finantiendaDatos' => $finantiendaDatos,
                                     'success' => true], 201);
 
         } catch(\Exception $e){
-            return response()->json(['msg' => 'tcIngresadas, ERROR!', 'success' => false], 201);
+            // return response()->json(['msg' => 'tarjetas_ingresadas, ERROR!', 'success' => false], 201);
         } 
     }
 
@@ -342,8 +350,10 @@ class TarjetaCreditoController extends Controller
 
 
 public function datos_fecha_actual(){
+    //obteniendo fecha actual para coger la cantidad de dias que contiene el mes
+    // $fechaActual = Carbon::now();
+    $fechaActual = Carbon::parse('2018-06-01');
 
-    $fechaActual = Carbon::now();
     $diasMesActual = $fechaActual->daysInMonth;
     $mesActual = str_pad($fechaActual->month ,2,"0",STR_PAD_LEFT);
     $anioActual = $fechaActual->year;
@@ -362,10 +372,6 @@ public function datos_fecha_actual(){
 
     return $datos_fecha_actual;
 }
-
-
-
-
 
 
 
@@ -436,15 +442,16 @@ public function datos_fecha_actual(){
 
     }
 
-    public function diaActual($fecha){
+    public function diaActual(){
 
-         setlocale(LC_TIME, 'English');
+        // setlocale(LC_TIME, 'English');
         // Carbon::setUtf8(true);
         // //obteniendo fecha de ayer
-        // $today = Carbon::now();
-        // $diaActual=$fecha->format('d-m-Y');
-        // $diaActual=$today->formatLocalized('%A %d %B %Y');
-        return $diaActual;
+        $today = Carbon::now();
+        // $dia_actual=$today->day;
+        $dia_actual = str_pad($today->day,2,"0",STR_PAD_LEFT);;
+
+        return $dia_actual;
     }
 
     public function primerDiaMesActual(){
