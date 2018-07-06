@@ -301,7 +301,7 @@ class TarjetaCreditoController extends Controller
 
             $dias = $datos_fecha_actual['nro_dias'];
             // $mes = $datos_fecha_actual['mes'];
-            $mes = $datos_fecha_actual['mes'];
+            $mes = "06";
             $anio = $datos_fecha_actual['anio'];
 
             // valores a enviar al procedimiento
