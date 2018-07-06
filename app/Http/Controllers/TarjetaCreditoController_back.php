@@ -91,11 +91,11 @@ class TarjetaCreditoController extends Controller
             ->select(
                     'Ejecutivos as ejecutivo',
                      DB::raw("SUM(cast (Nro_TC_Entregado as  float) ) AS nro_tc_entregado"),
-                     DB::raw("Ppto_Entregado_Diario * DATEDIFF(DAY,'20180531','20180621') AS ppto_entregado_diario_acumulado"),
-                     DB::raw("ROUND((SUM(cast (Nro_TC_Entregado as  float))/ (Ppto_Entregado_Diario * DATEDIFF(DAY,'20180531','20180621')))*100,2) AS porcentaje_entregado")
+                     DB::raw("Ppto_Entregado_Diario * DATEDIFF(DAY,'".$pdmamu."','".$fechaFin."') AS ppto_entregado_diario_acumulado"),
+                     DB::raw("ROUND((SUM(cast (Nro_TC_Entregado as  float))/ (Ppto_Entregado_Diario * DATEDIFF(DAY,'".$pdmamu."','".$fechaFin."')))*100,2) AS porcentaje_entregado")
              )
             ->where('Finantienda_key', '=', $finantiendaId)
-            ->whereBetween('Fecha',['20180601',$fechaFin])
+            ->whereBetween('Fecha',[$primerDiaMesActual,$fechaFin])
             ->groupBy('Ejecutivos','Ppto_Entregado_Mensual','Ppto_Part_Activada','Ppto_Entregado_Diario')
             ->get();  
 
@@ -185,11 +185,11 @@ class TarjetaCreditoController extends Controller
             ->select(
                     'Ejecutivos as ejecutivo',
                      DB::raw("sum (cast (Nro_TC_Activada as float) ) as nro_tc_Activada"),
-                     DB::raw("Ppto_Entregado_Diario * DATEDIFF(DAY,'20180531','20180621') as ppto_entregado_diario_acum"),
-                     DB::raw("round((sum (cast (Nro_TC_Activada as  float))/ (Ppto_Entregado_Diario * DATEDIFF(DAY,'20180531','20180621')))*100,2) as porcentaje_activado")
+                     DB::raw("Ppto_Entregado_Diario * DATEDIFF(DAY,'".$pdmamu."','".$fechaFin."') as ppto_entregado_diario_acum"),
+                     DB::raw("round((sum (cast (Nro_TC_Activada as  float))/ (Ppto_Entregado_Diario * DATEDIFF(DAY,'".$pdmamu."','".$fechaFin."')))*100,2) as porcentaje_activado")
              )
             ->where('Finantienda_key', '=', $finantiendaId)
-            ->whereBetween('Fecha',['20180601',$fechaFin])
+            ->whereBetween('Fecha',[$primerDiaMesActual,$fechaFin])
             ->groupBy('Ejecutivos','Ppto_Entregado_Mensual','Ppto_Part_Activada','Ppto_Entregado_Diario')
 
             ->get();  
@@ -280,11 +280,11 @@ class TarjetaCreditoController extends Controller
             ->select(
                         'Ejecutivos as ejecutivo',
                      DB::raw("SUM (cast (Nro_Ingreso as  float) ) AS nro_ingreso"),
-                     DB::raw("round(Ppto_Ingresado_Diario * DATEDIFF(DAY,'20180531','20180621'),0) AS ppto_ingresado_diario_acumulado"),
-                     DB::raw("round((sum (cast (Nro_Ingreso as  float))/(Ppto_Ingresado_Diario * DATEDIFF(DAY,'20180531','20180621')))*100,2) AS porcentaje_ingresado")                  
+                     DB::raw("round(Ppto_Ingresado_Diario * DATEDIFF(DAY,'".$pdmamu."','".$fechaFin."'),0) AS ppto_ingresado_diario_acumulado"),
+                     DB::raw("round((sum (cast (Nro_Ingreso as  float))/(Ppto_Ingresado_Diario * DATEDIFF(DAY,'".$pdmamu."','".$fechaFin."')))*100,2) AS porcentaje_ingresado")                  
              )
             ->where('Finantienda_key', '=', $finantiendaId)
-            ->whereBetween('Fecha',['20180601',$fechaFin])
+            ->whereBetween('Fecha',[$primerDiaMesActual,$fechaFin])
             ->groupBy('Ejecutivos','Ppto_Ingresado_Diario')
             ->get();  
 
@@ -310,6 +310,7 @@ class TarjetaCreditoController extends Controller
 
 
             $fecha_actual = $dia_actual."-".$mes."-".$anio;
+
 
             // valores a enviar al procedimiento
             $valores = [$dias,$mes,$anio,$finantiendaId];
