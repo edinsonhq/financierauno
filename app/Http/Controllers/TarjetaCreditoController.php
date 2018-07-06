@@ -300,6 +300,7 @@ class TarjetaCreditoController extends Controller
             $datos_fecha_actual =  $this->datos_fecha_actual();
 
             $dias = $datos_fecha_actual['nro_dias'];
+            // $mes = $datos_fecha_actual['mes'];
             $mes = $datos_fecha_actual['mes'];
             $anio = $datos_fecha_actual['anio'];
 
@@ -310,6 +311,7 @@ class TarjetaCreditoController extends Controller
 
             return response()->json(['msg' => 'Consulta exitosa',
                                     'rpta' => $ejecutivos_calendario, 
+                                    'mes' => $mes, 
                                     'finantiendaDatos' => $finantiendaDatos,
                                     'success' => true], 201);
 
