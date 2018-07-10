@@ -87,17 +87,28 @@ class TarjetaCreditoController extends Controller
          //$fechaFin = '20180621';
          $pdmamu = $this->primerDiaMesActualMenosUno();
 
-            $entregadas = DB::table('v_entregadas')            
+            $entregadas = DB::table('v_tarjetas_entregadas')            
             ->select(
                     'Ejecutivos as ejecutivo',
-                     DB::raw("SUM(cast (Nro_TC_Entregado as  float) ) AS nro_tc_entregado"),
-                     DB::raw("Ppto_Entregado_Diario * DATEDIFF(DAY,'20180531','20180621') AS ppto_entregado_diario_acumulado"),
-                     DB::raw("ROUND((SUM(cast (Nro_TC_Entregado as  float))/ (Ppto_Entregado_Diario * DATEDIFF(DAY,'20180531','20180621')))*100,2) AS porcentaje_entregado")
+                     DB::raw("sum(Nro_TC_Entregado) AS nro_tc_entregado"),
+                     DB::raw("round(sum(Ppto_Entregado),0) AS ppto_entregado_diario_acumulado"),
+                     DB::raw("round(sum(Nro_TC_Entregado)/sum(Ppto_Entregado)*100,2) AS porcentaje_entregado")
              )
-            ->where('Finantienda_key', '=', $finantiendaId)
+            ->where([
+                ['Finantienda_key', '=', $finantiendaId],
+                ['Ppto_Activado', '<>', 0],
+            ])
             ->whereBetween('Fecha',['20180601',$fechaFin])
-            ->groupBy('Ejecutivos','Ppto_Entregado_Mensual','Ppto_Part_Activada','Ppto_Entregado_Diario')
+            ->groupBy('Ejecutivos')
             ->get();  
+
+            // dd($entregadas);
+            
+                 // where CodigoCAI='090' AND Fecha between    '20180601' AND '20180704' and Ppto_Activado<>0
+                 // group by Ejecutivos 
+
+
+
 
         return $entregadas;
     }
@@ -198,102 +209,102 @@ class TarjetaCreditoController extends Controller
     }
 
     // tcIngresadas
-    public function tcIngresadas($finantiendaId, $fechaCustom){
+    // public function tcIngresadas($finantiendaId, $fechaCustom){
 
-        try{
-            //obteniendo data de finantienda
-            $finantiendaDatos= $this->finantiendaShow($finantiendaId);
+    //     try{
+    //         //obteniendo data de finantienda
+    //         $finantiendaDatos= $this->finantiendaShow($finantiendaId);
 
-            if($fechaCustom == "null"){
-                //obteniendo fecha actual
-                $today = Carbon::now();//$today = new Carbon("2018-06-09");
-                //buscando fecha con registros
-                for($i=1;$i<15;$i++){
-                    // obtener fecha atras
-                    $diaAtrasGenerado = $today->subDay(1); 
-                    //convirtiendo a formato deseado
-                    $diaAtrasGeneradoFormat = $diaAtrasGenerado->format('Ymd');
+    //         if($fechaCustom == "null"){
+    //             //obteniendo fecha actual
+    //             $today = Carbon::now();//$today = new Carbon("2018-06-09");
+    //             //buscando fecha con registros
+    //             for($i=1;$i<15;$i++){
+    //                 // obtener fecha atras
+    //                 $diaAtrasGenerado = $today->subDay(1); 
+    //                 //convirtiendo a formato deseado
+    //                 $diaAtrasGeneradoFormat = $diaAtrasGenerado->format('Ymd');
 
-                    // consultando registros
-                   $resultado = $this->busquedaIngresadas($finantiendaId,$diaAtrasGeneradoFormat);
+    //                 // consultando registros
+    //                $resultado = $this->busquedaIngresadas($finantiendaId,$diaAtrasGeneradoFormat);
 
-                   $cantidadRegistros = count($resultado);
+    //                $cantidadRegistros = count($resultado);
 
-                    if($cantidadRegistros>0){
-                            // CALCULO DE PORCENTAJE
-                            if($cantidadRegistros>0){
-                                $total=0;
-                                foreach($resultado as $item){
-                                    $total= $item->porcentaje_ingresado + $total;
-                                }
-                                $porcentaje = $total/$cantidadRegistros;
-                            }else{
-                                $porcentaje=0;
-                            }
-                        return response()->json(['msg' => 'Consulta exitosa, tcIngresadas',
-                                    'rpta'=>$resultado, 
-                                    'porcentajeTotal' => $porcentaje, 
-                                    'finantiendaDatos' => $finantiendaDatos,
-                                    'success' => true], 201);
-                        break;
-                    }else{
-                        return response()->json(['msg' => 'No hay Registros, ERROR!', 'success' => false], 201);
-                    }
-                }                   
-            }else{
+    //                 if($cantidadRegistros>0){
+    //                         // CALCULO DE PORCENTAJE
+    //                         if($cantidadRegistros>0){
+    //                             $total=0;
+    //                             foreach($resultado as $item){
+    //                                 $total= $item->porcentaje_ingresado + $total;
+    //                             }
+    //                             $porcentaje = $total/$cantidadRegistros;
+    //                         }else{
+    //                             $porcentaje=0;
+    //                         }
+    //                     return response()->json(['msg' => 'Consulta exitosa, tcIngresadas',
+    //                                 'rpta'=>$resultado, 
+    //                                 'porcentajeTotal' => $porcentaje, 
+    //                                 'finantiendaDatos' => $finantiendaDatos,
+    //                                 'success' => true], 201);
+    //                     break;
+    //                 }else{
+    //                     return response()->json(['msg' => 'No hay Registros, ERROR!', 'success' => false], 201);
+    //                 }
+    //             }                   
+    //         }else{
 
-                $resultado = $this->busquedaIngresadas($finantiendaId,$fechaCustom);
-                $cantidadRegistros = count($resultado);
-                // CALCULO DE PORCENTAJE
-                if($cantidadRegistros>0){
-                    $total=0;
-                    foreach($resultado as $item){
-                        $total= $item->porcentaje_ingresado + $total;
-                    }
-                    $porcentaje = $total/$cantidadRegistros;
+    //             $resultado = $this->busquedaIngresadas($finantiendaId,$fechaCustom);
+    //             $cantidadRegistros = count($resultado);
+    //             // CALCULO DE PORCENTAJE
+    //             if($cantidadRegistros>0){
+    //                 $total=0;
+    //                 foreach($resultado as $item){
+    //                     $total= $item->porcentaje_ingresado + $total;
+    //                 }
+    //                 $porcentaje = $total/$cantidadRegistros;
 
-                    return response()->json(['msg' => 'Consulta exitosa, tcIngresadas',
-                                    'rpta'=>$resultado, 
-                                    'porcentajeTotal' => $porcentaje, 
-                                    'finantiendaDatos' => $finantiendaDatos,
-                                    'success' => true], 201);
-                }else{
-                    $porcentaje=0;
+    //                 return response()->json(['msg' => 'Consulta exitosa, tcIngresadas',
+    //                                 'rpta'=>$resultado, 
+    //                                 'porcentajeTotal' => $porcentaje, 
+    //                                 'finantiendaDatos' => $finantiendaDatos,
+    //                                 'success' => true], 201);
+    //             }else{
+    //                 $porcentaje=0;
 
-                    return response()->json(['msg' => 'No hay Registros, ERROR!', 'success' => false], 201);
-                }
+    //                 return response()->json(['msg' => 'No hay Registros, ERROR!', 'success' => false], 201);
+    //             }
                         
-            }
+    //         }
 
-        } catch(\Exception $e){
-            return response()->json(['msg' => 'tcIngresadas, ERROR!', 'success' => false], 201);
-        } 
+    //     } catch(\Exception $e){
+    //         return response()->json(['msg' => 'tcIngresadas, ERROR!', 'success' => false], 201);
+    //     } 
 
-    }
+    // }
 
-    public function busquedaIngresadas($finantiendaId,$fechaFin){
+    // public function busquedaIngresadas($finantiendaId,$fechaFin){
 
-         $primerDiaMesActual = $this->primerDiaMesActual();
-         $pdmamu = $this->primerDiaMesActualMenosUno();
-         //$fechaFin = '20180621';
-        $ingresadas = DB::table('v_ingresadas')            
-            ->select(
-                        'Ejecutivos as ejecutivo',
-                     DB::raw("SUM (cast (Nro_Ingreso as  float) ) AS nro_ingreso"),
-                     DB::raw("round(Ppto_Ingresado_Diario * DATEDIFF(DAY,'20180531','20180621'),0) AS ppto_ingresado_diario_acumulado"),
-                     DB::raw("round((sum (cast (Nro_Ingreso as  float))/(Ppto_Ingresado_Diario * DATEDIFF(DAY,'20180531','20180621')))*100,2) AS porcentaje_ingresado")                  
-             )
-            ->where('Finantienda_key', '=', $finantiendaId)
-            ->whereBetween('Fecha',['20180601',$fechaFin])
-            ->groupBy('Ejecutivos','Ppto_Ingresado_Diario')
-            ->get();  
+    //      $primerDiaMesActual = $this->primerDiaMesActual();
+    //      $pdmamu = $this->primerDiaMesActualMenosUno();
+    //      //$fechaFin = '20180621';
+    //     $ingresadas = DB::table('v_ingresadas')            
+    //         ->select(
+    //                     'Ejecutivos as ejecutivo',
+    //                  DB::raw("SUM (cast (Nro_Ingreso as  float) ) AS nro_ingreso"),
+    //                  DB::raw("round(Ppto_Ingresado_Diario * DATEDIFF(DAY,'20180531','20180621'),0) AS ppto_ingresado_diario_acumulado"),
+    //                  DB::raw("round((sum (cast (Nro_Ingreso as  float))/(Ppto_Ingresado_Diario * DATEDIFF(DAY,'20180531','20180621')))*100,2) AS porcentaje_ingresado")                  
+    //          )
+    //         ->where('Finantienda_key', '=', $finantiendaId)
+    //         ->whereBetween('Fecha',['20180601',$fechaFin])
+    //         ->groupBy('Ejecutivos','Ppto_Ingresado_Diario')
+    //         ->get();  
 
-        return $ingresadas;
-    }
+    //     return $ingresadas;
+    // }
 
 
 
-    public function tarjetas_ingresadas($finantiendaId){
+    public function tcIngresadas($finantiendaId){
         try{
       
             $finantiendaDatos= $this->finantiendaShow($finantiendaId);
@@ -325,7 +336,7 @@ class TarjetaCreditoController extends Controller
                                     'success' => true], 201);
 
         } catch(\Exception $e){
-            // return response()->json(['msg' => 'tarjetas_ingresadas, ERROR!', 'success' => false], 201);
+            return response()->json(['msg' => 'tarjetas_ingresadas, ERROR!', 'success' => false], 201);
         } 
     }
 

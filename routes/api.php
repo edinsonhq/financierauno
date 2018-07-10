@@ -40,9 +40,9 @@ Route::get('tcEntregadas/{finantiendaId}/{fechaCustomInicio}',array(
 	'uses'	=>'TarjetaCreditoController@tcEntregadas',
 ));
 
-Route::get('tcIngresadas/{finantiendaId}/{fechaCustomInicio}',array(
-	'uses'	=>'TarjetaCreditoController@tcIngresadas',
-));
+// Route::get('tcIngresadas/{finantiendaId}/{fechaCustomInicio}',array(
+// 	'uses'	=>'TarjetaCreditoController@tcIngresadas',
+// ));
 
 Route::get('tcActivadas/{finantiendaId}/{fechaCustomInicio}',array(
 	'uses'	=>'TarjetaCreditoController@tcActivadas',
@@ -51,8 +51,8 @@ Route::get('tcActivadas/{finantiendaId}/{fechaCustomInicio}',array(
 
 
 
-Route::get('tarjetas_ingresadas/{finantiendaId}',array(
-	'uses'	=>'TarjetaCreditoController@tarjetas_ingresadas',
+Route::get('tcIngresadas/{finantiendaId}',array(
+	'uses'	=>'TarjetaCreditoController@tcIngresadas',
 ));
 
 
@@ -86,15 +86,15 @@ Route::get('datos_fecha_actual',array(
 
 
 
-//LOGIN
-Route::get('login',array(
-	'uses'	=>'LoginController@login',
-));
+// //LOGIN
+// Route::get('login',array(
+// 	'uses'	=>'LoginController@login',
+// ));
 
 
 
-Route::post('login','LoginController@login');
-Route::post('logout','LoginController@logout');
+// Route::post('login','LoginController@login');
+// Route::post('logout','LoginController@logout');
 
 
 
