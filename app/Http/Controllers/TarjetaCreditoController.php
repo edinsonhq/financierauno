@@ -216,101 +216,6 @@ class TarjetaCreditoController extends Controller
          
     }
 
-    // tcIngresadas
-    // public function tcIngresadas($finantiendaId, $fechaCustom){
-
-    //     try{
-    //         //obteniendo data de finantienda
-    //         $finantiendaDatos= $this->finantiendaShow($finantiendaId);
-
-    //         if($fechaCustom == "null"){
-    //             //obteniendo fecha actual
-    //             $today = Carbon::now();//$today = new Carbon("2018-06-09");
-    //             //buscando fecha con registros
-    //             for($i=1;$i<15;$i++){
-    //                 // obtener fecha atras
-    //                 $diaAtrasGenerado = $today->subDay(1); 
-    //                 //convirtiendo a formato deseado
-    //                 $diaAtrasGeneradoFormat = $diaAtrasGenerado->format('Ymd');
-
-    //                 // consultando registros
-    //                $resultado = $this->busquedaIngresadas($finantiendaId,$diaAtrasGeneradoFormat);
-
-    //                $cantidadRegistros = count($resultado);
-
-    //                 if($cantidadRegistros>0){
-    //                         // CALCULO DE PORCENTAJE
-    //                         if($cantidadRegistros>0){
-    //                             $total=0;
-    //                             foreach($resultado as $item){
-    //                                 $total= $item->porcentaje_ingresado + $total;
-    //                             }
-    //                             $porcentaje = $total/$cantidadRegistros;
-    //                         }else{
-    //                             $porcentaje=0;
-    //                         }
-    //                     return response()->json(['msg' => 'Consulta exitosa, tcIngresadas',
-    //                                 'rpta'=>$resultado, 
-    //                                 'porcentajeTotal' => $porcentaje, 
-    //                                 'finantiendaDatos' => $finantiendaDatos,
-    //                                 'success' => true], 201);
-    //                     break;
-    //                 }else{
-    //                     return response()->json(['msg' => 'No hay Registros, ERROR!', 'success' => false], 201);
-    //                 }
-    //             }                   
-    //         }else{
-
-    //             $resultado = $this->busquedaIngresadas($finantiendaId,$fechaCustom);
-    //             $cantidadRegistros = count($resultado);
-    //             // CALCULO DE PORCENTAJE
-    //             if($cantidadRegistros>0){
-    //                 $total=0;
-    //                 foreach($resultado as $item){
-    //                     $total= $item->porcentaje_ingresado + $total;
-    //                 }
-    //                 $porcentaje = $total/$cantidadRegistros;
-
-    //                 return response()->json(['msg' => 'Consulta exitosa, tcIngresadas',
-    //                                 'rpta'=>$resultado, 
-    //                                 'porcentajeTotal' => $porcentaje, 
-    //                                 'finantiendaDatos' => $finantiendaDatos,
-    //                                 'success' => true], 201);
-    //             }else{
-    //                 $porcentaje=0;
-
-    //                 return response()->json(['msg' => 'No hay Registros, ERROR!', 'success' => false], 201);
-    //             }
-                        
-    //         }
-
-    //     } catch(\Exception $e){
-    //         return response()->json(['msg' => 'tcIngresadas, ERROR!', 'success' => false], 201);
-    //     } 
-
-    // }
-
-    // public function busquedaIngresadas($finantiendaId,$fechaFin){
-
-    //      $primerDiaMesActual = $this->primerDiaMesActual();
-    //      $pdmamu = $this->primerDiaMesActualMenosUno();
-    //      //$fechaFin = '20180621';
-    //     $ingresadas = DB::table('v_ingresadas')            
-    //         ->select(
-    //                     'Ejecutivos as ejecutivo',
-    //                  DB::raw("SUM (cast (Nro_Ingreso as  float) ) AS nro_ingreso"),
-    //                  DB::raw("round(Ppto_Ingresado_Diario * DATEDIFF(DAY,'20180531','20180621'),0) AS ppto_ingresado_diario_acumulado"),
-    //                  DB::raw("round((sum (cast (Nro_Ingreso as  float))/(Ppto_Ingresado_Diario * DATEDIFF(DAY,'20180531','20180621')))*100,2) AS porcentaje_ingresado")                  
-    //          )
-    //         ->where('Finantienda_key', '=', $finantiendaId)
-    //         ->whereBetween('Fecha',['20180601',$fechaFin])
-    //         ->groupBy('Ejecutivos','Ppto_Ingresado_Diario')
-    //         ->get();  
-
-    //     return $ingresadas;
-    // }
-
-
 
     public function tcIngresadas($finantiendaId){
         try{
@@ -349,6 +254,38 @@ class TarjetaCreditoController extends Controller
     }
 
 
+
+    public function tcActivadasSupervisor($finantiendaId,$fechaFin){
+
+        try{
+
+
+         $primerDiaMesActual = $this->primerDiaMesActual();
+         //$fechaFin = '20180621';
+         $pdmamu = $this->primerDiaMesActualMenosUno();
+
+        $supervisor = DB::table('v_tarjetas_entregadas')            
+        ->select(
+                'Supervisor as supervisor',
+                 DB::raw("sum(Nro_TC_Activada_supervisor) AS nro_tc_activada_supervisor"),
+                 DB::raw("round(sum(Ppto_Activado),0) AS ppto_activada_diario_acumulado_supervisor"),
+                 DB::raw("round(sum(Nro_TC_Activada_supervisor)/sum(Ppto_Activado)*100,2) AS porcentaje_activada")
+         )
+        ->where([
+            ['Finantienda_key', '=', $finantiendaId],
+            ['Ppto_Activado', '<>', 0],
+        ])
+        ->whereBetween('Fecha',['20180601',$fechaFin])
+        ->groupBy('supervisor')
+        ->get();              
+               
+        return $supervisor;
+
+        } catch(\Exception $e){
+            return response()->json(['msg' => 'tarjetas_ingresadas, ERROR!', 'success' => false], 201);
+        } 
+         
+    }
 
 
 

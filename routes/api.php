@@ -55,6 +55,11 @@ Route::get('tarjetas_ingresadas/{finantiendaId}',array(
 	'uses'	=>'TarjetaCreditoController@tcIngresadas',
 ));
 
+//ACTIVADAS SUPERVISOR
+Route::get('tcActivadasSupervisor/{finantiendaId}/{fechaCustom}',array(
+	'uses'	=>'TarjetaCreditoController@tcActivadasSupervisor',
+));
+
 
 
 
