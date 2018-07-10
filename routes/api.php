@@ -51,7 +51,7 @@ Route::get('tcActivadas/{finantiendaId}/{fechaCustomInicio}',array(
 
 
 
-Route::get('tcIngresadas/{finantiendaId}',array(
+Route::get('tarjetas_ingresadas/{finantiendaId}',array(
 	'uses'	=>'TarjetaCreditoController@tcIngresadas',
 ));
 
