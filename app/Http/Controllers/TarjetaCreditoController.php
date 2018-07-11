@@ -316,6 +316,37 @@ class TarjetaCreditoController extends Controller
     //     return $ingresadas;
     // }
 
+public function tcActivadasSupervisor($finantiendaId,$fechaFin){
+
+       try{
+
+
+        $primerDiaMesActual = $this->primerDiaMesActual();
+        //$fechaFin = '20180621';
+        $pdmamu = $this->primerDiaMesActualMenosUno();
+
+       $supervisor = DB::table('v_tarjetas_entregadas')            
+       ->select(
+               'Supervisor as supervisor',
+                DB::raw("sum(Nro_TC_Activada_supervisor) AS nro_tc_activada_supervisor"),
+                DB::raw("round(sum(Ppto_Activado),0) AS ppto_activada_diario_acumulado_supervisor"),
+                DB::raw("round(sum(Nro_TC_Activada_supervisor)/sum(Ppto_Activado)*100,2) AS porcentaje_activada")
+        )
+       ->where([
+           ['Finantienda_key', '=', $finantiendaId],
+       ])
+       ->whereBetween('Fecha',['20180601',$fechaFin])
+       ->groupBy('supervisor')
+       ->get();              
+              
+       return $supervisor;
+
+       } catch(\Exception $e){
+           return response()->json(['msg' => 'tarjetas_ingresadas, ERROR!', 'success' => false], 201);
+       } 
+        
+   }
+
 
 
     public function tcIngresadas($finantiendaId){
