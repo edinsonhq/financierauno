@@ -34,13 +34,14 @@ class TarjetaCreditoController extends Controller
 
                     if($cantidadRegistros>0){
                             // CALCULO DE PORCENTAJE
-                            if($cantidadRegistros>0){
+                            //if($cantidadRegistros>0){
                                 $total=0;
                                 foreach($resultado as $item){
                                     $total= $item->porcentaje_entregado + $total;
                                 }
-                                $porcentaje = $total/$cantidadRegistros;
-                            }
+                                $porcentaje = $cantidadRegistros;
+                           // }
+
                         return response()->json(['msg' => 'Consulta exitosa, tcEntregadas',
                                     'rpta'=>$resultado, 
                                     'porcentajeTotal' => $porcentaje, 
@@ -58,14 +59,17 @@ class TarjetaCreditoController extends Controller
                 // CALCULO DE PORCENTAJE
                 if($cantidadRegistros>0){
                     $total=0;
+                    $totalmeta=0;
                     foreach($resultado as $item){
-                        $total= $item->porcentaje_entregado + $total;
-                    }
-                    $porcentaje = $total/$cantidadRegistros;
+                        $total= $item->nro_tc_entregado + $total;
+                        $totalmeta=$item->ppto_entregado_diario_acumulado + $totalmeta;                        
+                     }
+                    //$porcentaje = $total/$cantidadRegistros;
 
                     return response()->json(['msg' => 'Consulta exitosa, tcEntregadas',
                                 'rpta'=>$resultado, 
-                                'porcentajeTotal' => $porcentaje, 
+                                'porcentajeTotal' =>  $total/$totalmeta*100,
+                                'totalmeta'=>round($totalmeta),
                                 'finantiendaDatos' => $finantiendaDatos,
                                 'success' => true], 201);
                 }else{
@@ -84,19 +88,19 @@ class TarjetaCreditoController extends Controller
     public function busquedaEntregadas($finantiendaId,$fechaFin){
 
          $primerDiaMesActual = $this->primerDiaMesActual();
-         //$fechaFin = '20180621';
+         $fechaFin = '20180630';
          $pdmamu = $this->primerDiaMesActualMenosUno();
 
             $entregadas = DB::table('v_tarjetas_entregadas')            
             ->select(
                     'Ejecutivos as ejecutivo',
                      DB::raw("sum(Nro_TC_Entregado) AS nro_tc_entregado"),
-                     DB::raw("round(sum(Ppto_Entregado),0) AS ppto_entregado_diario_acumulado"),
-                     DB::raw("round(sum(Nro_TC_Entregado)/sum(Ppto_Entregado)*100,2) AS porcentaje_entregado")
+                     DB::raw("sum(Ppto_Entregado) AS ppto_entregado_diario_acumulado"),
+                     DB::raw("case when sum(Ppto_Entregado)<>0 then (sum(Nro_TC_Entregado)/sum(Ppto_Entregado))*100 else 0 end AS porcentaje_entregado")
              )
             ->where([
                 ['Finantienda_key', '=', $finantiendaId],
-                ['Ppto_Activado', '<>', 0],
+                
             ])
             ->whereBetween('Fecha',['20180601',$fechaFin])
             ->groupBy('Ejecutivos')
@@ -163,14 +167,17 @@ class TarjetaCreditoController extends Controller
                 // CALCULO DE PORCENTAJE
                 if($cantidadRegistros>0){
                     $total=0;
+                    $totalmeta=0;
                     foreach($resultado as $item){
-                        $total= $item->porcentaje_activado + $total;
+                        $total= $item->nro_tc_Activada+ $total;
+                        $totalmeta=$item->ppto_entregado_diario_acum+$totalmeta;
                     }
                     $porcentaje = $total/$cantidadRegistros;
 
                     return response()->json(['msg' => 'Consulta exitosa, tcActivadas',
                                     'rpta'=>$resultado, 
-                                    'porcentajeTotal' => $porcentaje, 
+                                    'porcentajeTotal' => ($total/$totalmeta)*100,
+                                    'totalmeta' => $totalmeta, 
                                     'finantiendaDatos' => $finantiendaDatos,
                                     'success' => true], 201);
                 }else{
@@ -189,20 +196,19 @@ class TarjetaCreditoController extends Controller
     public function busquedaActivadas($finantiendaId,$fechaFin){
 
          $primerDiaMesActual = $this->primerDiaMesActual();
-         //$fechaFin = '20180621';
+         $fechaFin = '20180630';
          $pdmamu = $this->primerDiaMesActualMenosUno();
 
         $activadas = DB::table('v_tarjetas_entregadas')            
         ->select(
                 'Ejecutivos as ejecutivo',
                  DB::raw("sum(Nro_TC_Activada) AS nro_tc_Activada"),
-                 DB::raw("round(sum(Ppto_Entregado),0) AS ppto_entregado_diario_acum"),
-                 DB::raw("round(sum(Nro_TC_Activada)/sum(Ppto_Entregado)*100,2) AS porcentaje_activado")
-         )
+                 DB::raw("sum(Ppto_Activado) AS ppto_entregado_diario_acum"),
+                 //DB::raw("round(sum(Nro_TC_Activada)/sum(Ppto_Activado)*100,2) AS porcentaje_activado")
+                 DB::raw("case when sum(Ppto_Activado)<>0 then round(sum(Nro_TC_Activada)/sum(Ppto_Activado)*100,2) else 0 end AS porcentaje_activado")         )
         ->where([
             ['Finantienda_key', '=', $finantiendaId],
-            ['Ppto_Activado', '<>', 0],
-        ])
+                    ])
         ->whereBetween('Fecha',['20180601',$fechaFin])
         ->groupBy('Ejecutivos')
         ->get(); 
@@ -347,26 +353,6 @@ class TarjetaCreditoController extends Controller
             return response()->json(['msg' => 'tarjetas_ingresadas, ERROR!', 'success' => false], 201);
         } 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 public function datos_fecha_actual(){
